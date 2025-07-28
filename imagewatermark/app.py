@@ -11,7 +11,7 @@ class WatermarkApp:
     def __init__(self, root):
         self.root = root
         self.root.title("🖼️ Image Watermarker")
-        self.root.geometry("900x850")
+        self.root.geometry("950x900")
         self.root.minsize(800, 600)  # Sets a reasonable minimum size
 
 
@@ -265,7 +265,10 @@ class WatermarkApp:
 
 
 # -------- Launch App --------
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     app = WatermarkApp(root)
     root.mainloop()
+
+if __name__ == "__main__":
+    main()
