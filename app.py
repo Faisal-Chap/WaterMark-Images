@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from PIL import Image, ImageTk, ImageDraw, ImageFont
+from tkinter import colorchooser
+
+
 
 
 class WatermarkApp:
@@ -19,6 +22,14 @@ class WatermarkApp:
         self.image_on_canvas = None
         self.image_path = None
         self.pil_image = None
+
+        # Default text color for watermark
+        self.text_color = (255, 255, 255)  # default white
+
+
+
+
+
 
         # --- Zoom and Move Support ---
         self.zoom_level = 1.0
@@ -140,17 +151,37 @@ class WatermarkApp:
         self.rotation_slider.grid(row=3, column=1, sticky='ew', padx=10)
 
         # --- Action Buttons ---
+        # --- Color Selection Button and Preview ---
+        color_button = tk.Button(self.control_frame, text="Pick Text Color", command=self.choose_text_color)
+        color_button.grid(row=4, column=0, pady=10)
+        
+        # Color preview label - NOW created after control_frame exists
+        self.color_preview = tk.Label(self.control_frame, width=2, background="#FFFFFF")
+        self.color_preview.grid(row=4, column=1, padx=5)
+
+        # --- Action Buttons ---
         apply_btn = tk.Button(self.control_frame, text="💧 Apply Watermark", command=self.apply_watermark)
-        apply_btn.grid(row=4, column=0, pady=10)
+        apply_btn.grid(row=5, column=0, pady=10)
 
         save_btn = tk.Button(self.control_frame, text="💾 Save Image", command=self.save_image)
-        save_btn.grid(row=4, column=1, pady=10)
+        save_btn.grid(row=5, column=1, pady=10)
         # Bind events to update watermark preview
         self.text_entry.bind("<KeyRelease>", lambda e: self.apply_watermark())
         self.font_size_slider.config(command=lambda x: self.apply_watermark())
         self.opacity_slider.config(command=lambda x: self.apply_watermark())
         self.rotation_slider.config(command=lambda x: self.apply_watermark())
 
+
+
+    # -------- Choose Text Color --------
+
+    def choose_text_color(self):
+        color = colorchooser.askcolor(title="Choose Text Color")
+        if color[0]:
+            self.text_color = tuple(map(int, color[0]))
+            hex_color = color[1]
+            self.color_preview.config(background=hex_color)
+            self.apply_watermark()
 
 
 
@@ -171,7 +202,7 @@ class WatermarkApp:
             print("Font not found. Falling back to default (may be small).")
             font = ImageFont.load_default()
 
-            
+
         # Create watermark text image
         # Step 1: Calculate text size
         bbox = font.getbbox(text)
@@ -181,8 +212,8 @@ class WatermarkApp:
         # Step 2: Create transparent image just for text
         text_img = Image.new("RGBA", (text_width, text_height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(text_img)
-        draw.text((0, 0), text, font=font, fill=(255, 255, 255, int(255 * opacity / 100)))
-
+        fill = (*self.text_color, int(255 * opacity / 100))
+        draw.text((0, 0), text, font=font, fill=fill)
         # Step 3: Rotate the watermark
         rotated_text = text_img.rotate(rotation, expand=1)
 
